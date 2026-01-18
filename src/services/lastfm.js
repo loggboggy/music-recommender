@@ -8,7 +8,7 @@ export async function getSimilarTracks(artist, track) {
     track: track,
     api_key: API_KEY,
     format: 'json',
-    limit: 10,
+    limit: 50,
   });
 
   const response = await fetch(`${BASE_URL}?${params}`);
@@ -27,13 +27,18 @@ export async function getSimilarTracks(artist, track) {
     return [];
   }
 
-  return data.similartracks.track.map((track) => ({
-    name: track.name,
-    artist: track.artist.name,
-    url: track.url,
-    playcount: track.playcount,
-    match: track.match,
-  }));
+  const inputArtist = artist.toLowerCase();
+
+  return data.similartracks.track
+    .filter((t) => t.artist.name.toLowerCase() !== inputArtist)
+    .slice(0, 10)
+    .map((t) => ({
+      name: t.name,
+      artist: t.artist.name,
+      url: t.url,
+      playcount: t.playcount,
+      match: t.match,
+    }));
 }
 
 export async function searchTrack(artist, track) {
