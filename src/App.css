@@ -143,9 +143,16 @@ body {
 /* Song List Styles */
 .song-list h2 {
   font-size: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   color: #a0a0a0;
   font-weight: 500;
+}
+
+.fallback-note {
+  font-size: 0.875rem;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 1rem;
 }
 
 .songs-container {

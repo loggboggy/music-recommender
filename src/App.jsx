@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import SongList from './components/SongList';
-import { getSimilarTracks } from './services/lastfm';
+import { getRecommendations } from './services/lastfm';
 import './App.css';
 
 function App() {
@@ -9,20 +9,23 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchedTrack, setSearchedTrack] = useState(null);
+  const [isFallback, setIsFallback] = useState(false);
 
   const handleSearch = async (artist, track) => {
     setIsLoading(true);
     setError(null);
     setSongs([]);
+    setIsFallback(false);
 
     try {
-      const similarTracks = await getSimilarTracks(artist, track);
+      const { tracks, fallback } = await getRecommendations(artist, track);
 
-      if (similarTracks.length === 0) {
-        setError('No similar tracks found. Try a different song or check your spelling.');
+      if (tracks.length === 0) {
+        setError('No similar tracks or artists found. Try a different song or check your spelling.');
       } else {
-        setSongs(similarTracks);
+        setSongs(tracks);
         setSearchedTrack({ artist, track });
+        setIsFallback(fallback);
       }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
@@ -50,7 +53,7 @@ function App() {
           </div>
         )}
 
-        <SongList songs={songs} searchedTrack={searchedTrack} />
+        <SongList songs={songs} searchedTrack={searchedTrack} isFallback={isFallback} />
 
         {!songs.length && !isLoading && !error && (
           <div className="placeholder">

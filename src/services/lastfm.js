@@ -56,6 +56,83 @@ export async function getSimilarTracks(artist, track) {
     }));
 }
 
+async function getSimilarArtists(artist) {
+  const params = new URLSearchParams({
+    method: 'artist.getSimilar',
+    artist: artist,
+    api_key: API_KEY,
+    format: 'json',
+    limit: 10,
+  });
+
+  const response = await fetch(`${BASE_URL}?${params}`);
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const data = await response.json();
+
+  if (data.error || !data.similarartists || !data.similarartists.artist) {
+    return [];
+  }
+
+  return data.similarartists.artist.map((a) => a.name);
+}
+
+async function getArtistTopTrack(artist) {
+  const params = new URLSearchParams({
+    method: 'artist.getTopTracks',
+    artist: artist,
+    api_key: API_KEY,
+    format: 'json',
+    limit: 1,
+  });
+
+  const response = await fetch(`${BASE_URL}?${params}`);
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = await response.json();
+
+  if (data.error || !data.toptracks || !data.toptracks.track || !data.toptracks.track[0]) {
+    return null;
+  }
+
+  const track = data.toptracks.track[0];
+  return {
+    name: track.name,
+    artist: track.artist.name,
+    url: track.url,
+    playcount: track.playcount,
+  };
+}
+
+export async function getRecommendations(artist, track) {
+  // First try track-based recommendations
+  const similarTracks = await getSimilarTracks(artist, track);
+
+  if (similarTracks.length > 0) {
+    return { tracks: similarTracks, fallback: false };
+  }
+
+  // Fallback: get similar artists and their top tracks
+  const similarArtists = await getSimilarArtists(artist);
+
+  if (similarArtists.length === 0) {
+    return { tracks: [], fallback: true };
+  }
+
+  const trackPromises = similarArtists.map((a) => getArtistTopTrack(a));
+  const tracks = await Promise.all(trackPromises);
+
+  const validTracks = tracks.filter((t) => t !== null);
+
+  return { tracks: validTracks, fallback: true };
+}
+
 export async function searchTrack(artist, track) {
   const params = new URLSearchParams({
     method: 'track.search',
