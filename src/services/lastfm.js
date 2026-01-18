@@ -1,4 +1,4 @@
-const API_KEY = import.meta.env.VITE_LASTFM_API_KEY || 'YOUR_API_KEY_HERE';
+const API_KEY = import.meta.env.VITE_LASTFM_API_KEY || '6740cf9c5998bb89cf3c641c5ec48b57';
 const BASE_URL = 'https://ws.audioscrobbler.com/2.0/';
 
 export async function getSimilarTracks(artist, track) {
