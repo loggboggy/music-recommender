@@ -27,10 +27,25 @@ export async function getSimilarTracks(artist, track) {
     return [];
   }
 
-  const inputArtist = artist.toLowerCase();
+  // Normalize artist name for comparison
+  const normalize = (name) =>
+    name.toLowerCase()
+      .replace(/^the\s+/, '')
+      .replace(/[^a-z0-9]/g, '');
+
+  const inputArtistNorm = normalize(artist);
+
+  // Also get the canonical artist name from the API response
+  const canonicalArtist = data.similartracks['@attr']?.artist;
+  const canonicalArtistNorm = canonicalArtist ? normalize(canonicalArtist) : null;
 
   return data.similartracks.track
-    .filter((t) => t.artist.name.toLowerCase() !== inputArtist)
+    .filter((t) => {
+      const trackArtistNorm = normalize(t.artist.name);
+      // Filter out if it matches either the input or canonical artist name
+      return trackArtistNorm !== inputArtistNorm &&
+             trackArtistNorm !== canonicalArtistNorm;
+    })
     .slice(0, 10)
     .map((t) => ({
       name: t.name,
