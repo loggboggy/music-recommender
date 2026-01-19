@@ -112,7 +112,12 @@ async function getArtistTopTrack(artist) {
 
 export async function getRecommendations(artist, track) {
   // First try track-based recommendations
-  const similarTracks = await getSimilarTracks(artist, track);
+  let similarTracks = [];
+  try {
+    similarTracks = await getSimilarTracks(artist, track);
+  } catch (err) {
+    // Track not found or API error - will fall back to artist-based
+  }
 
   if (similarTracks.length > 0) {
     return { tracks: similarTracks, fallback: false };
